@@ -7,10 +7,8 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Google AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6939344704678951" crossorigin="anonymous"></script>
 
-  <!-- Google Maps -->
   <script>
     (g=>{
       var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",
@@ -50,35 +48,28 @@
   function estimateBusy(place) {
     const hour = new Date().getHours();
     const day = new Date().getDay();
-
     let busy = 30;
-
     const reviews = place.user_ratings_total || 0;
     if (reviews > 3000) busy += 25;
     else if (reviews > 1000) busy += 15;
     else if (reviews > 300) busy += 8;
-
     if (place.rating >= 4.0) busy += 10;
-
     if (hour >= 11 && hour <= 14) busy += 25;
     if (hour >= 18 && hour <= 21) busy += 30;
-
     if (day === 0 || day === 6) busy += 10;
-
-    if (place.opening_hours && place.opening_hours.open_now === false) {
-      return 0;
-    }
-
+    if (place.opening_hours && place.opening_hours.open_now === false) return 0;
     busy += Math.random() * 10 - 5;
     return Math.max(5, Math.min(Math.round(busy), 100));
   }
 
+  // 広告HTMLを生成する関数：IDを整理しました
   function adHTML() {
     return `
-      <div class="bg-gray-800 p-4 rounded-2xl border border-gray-700">
+      <div class="bg-gray-800 p-4 rounded-2xl border border-gray-700 my-4 text-center">
+        <p class="text-[10px] text-gray-500 mb-2 text-left">スポンサーリンク</p>
         <ins class="adsbygoogle"
           style="display:block"
-          data-ad-client="ca-pub-XXXXXXXXXXXX"
+          data-ad-client="ca-pub-6939344704678951"
           data-ad-slot="1111111111"
           data-ad-format="auto"
           data-full-width-responsive="true"></ins>
@@ -97,8 +88,7 @@
     service.nearbySearch({
       location: shibuya,
       radius: 1200,
-      keyword:
-        "サイゼリヤ ガスト デニーズ ジョナサン ロイヤルホスト バーミヤン ココス 牛角 焼肉きんぐ 安楽亭 叙々苑 ワンカルビ",
+      keyword: "サイゼリヤ ガスト デニーズ ジョナサン ロイヤルホスト バーミヤン ココス 牛角 焼肉きんぐ 安楽亭 叙々苑 ワンカルビ",
       type: "restaurant"
     }, (results, status) => {
 
@@ -111,13 +101,11 @@
       container.innerHTML = "";
       statusEl.innerText = "ONLINE";
 
-      results
-        .filter(p => p.name)
-        .forEach((place, index) => {
-
+      results.filter(p => p.name).forEach((place, index) => {
+          // 5店舗ごとに広告を挿入
           if (index > 0 && index % 5 === 0) {
             container.insertAdjacentHTML("beforeend", adHTML());
-            (adsbygoogle = window.adsbygoogle || []).push({});
+            try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
           }
 
           const busy = estimateBusy(place);
@@ -126,21 +114,20 @@
           else if (busy > 60) color = "bg-yellow-500";
 
           container.insertAdjacentHTML("beforeend", `
-            <div class="bg-gray-800 p-5 rounded-2xl border border-gray-700">
+            <div class="bg-gray-800 p-5 rounded-2xl border border-gray-700 shadow-lg mb-4">
               <div class="flex justify-between">
                 <h3 class="font-bold text-lg">${place.name}</h3>
-                <span class="text-orange-400">★ ${place.rating ?? "--"}</span>
+                <span class="text-orange-400 font-mono">★ ${place.rating ?? "--"}</span>
               </div>
-
               <div class="mt-4">
                 <div class="flex justify-between text-xs mb-1 font-mono">
                   <span class="${busy === 0 ? "text-red-400" : "text-green-400"}">
-                    ${busy === 0 ? "○ CLOSED" : "● OPEN"}
+                    ${busy === 0 ? "● CLOSED" : "● OPEN"}
                   </span>
                   <span>BUSY: ${busy}%</span>
                 </div>
                 <div class="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                  <div class="h-full ${color}" style="width:${busy}%"></div>
+                  <div class="h-full ${color} transition-all duration-500" style="width:${busy}%"></div>
                 </div>
               </div>
             </div>
@@ -152,9 +139,11 @@
   initApp();
 </script>
 
-<p class="text-xs text-gray-500 text-center mt-8 px-4">
-  ※ 混雑度はGoogle公式情報ではなく、レビュー数・時間帯などから推定した目安です
-</p>
+<footer class="p-8">
+  <p class="text-xs text-gray-500 text-center">
+    ※ 混雑度はGoogle公式情報ではなく、レビュー数・時間帯などから推定した目安です
+  </p>
+</footer>
 
 </body>
 </html>
